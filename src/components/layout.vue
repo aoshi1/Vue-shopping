@@ -1,71 +1,95 @@
-<template>
-  <div id="app">
+﻿<template>
+  <div @click="clearComponentStatus">
     <div class="app-head">
       <div class="app-head-inner">
-        <!--logo图标，访问地址是首页-->
-        <router-link :to="{name: 'index'}" class="head-logo">
-          <img src="./assets/logo.png">
+        <router-link :to="{path: '/'}">
+          <img src="../assets/logo.png">
         </router-link>
         <div class="head-nav">
           <ul class="nav-list">
-            <!--点击弹出窗口-->
-            <li @click="showDialog('isShowLogin')">登录</li>
+            <li> {{ username }}</li>
+            <li v-if="username!== ''" class="nav-pile">|</li>
+            <li v-if="username!== ''" @click="quit">退出</li>
+            <li v-if="username=== ''" @click="logClick">登录</li>
             <li class="nav-pile">|</li>
-            <li @click="showDialog('isShowReg')">注册</li>
-            <li class="nav-pile">|</li>
-            <li @click="showDialog('isShowAbout')">关于</li>
+            <li v-if="username=== ''" @click="regClick">注册</li>
+            <li v-if="username=== ''" class="nav-pile">|</li>
+            <li @click="aboutClick">关于</li>
           </ul>
-        </div>
+        </div>  
       </div>
     </div>
     <div class="container">
-      <!--keep-alive是Vue提供的一个抽象组件，用来对组件进行缓存，从而节省性能，由于是一个抽象组件，所以在v页面渲染完毕后不会被渲染成一个DOM元素-->
-      <!--router-view显示组件的内容-->
-      <keep-alive >
+      <keep-alive>
         <router-view></router-view>
       </keep-alive>
     </div>
     <div class="app-foot">
-      <p>© 2022 网上购物商场</p>
+      <p>© 2016 fishenal MIT</p>
     </div>
-    <this-dialog :is-show="isShowAbout" @on-close="hideDialog('isShowAbout')">
-      <p>本平台主要销售电器类商品的销售。如果遇到问题，请联系平台开发者的微信奥...，从而获取技术支持。</p>
-    </this-dialog>
-    <this-dialog :is-show="isShowLogin" @on-close="hideDialog('isShowLogin')">
-      <login-form ></login-form>
-    </this-dialog>
+    <my-dialog :is-show="isShowAboutDialog" @on-close="closeDialog('isShowAboutDialog')">
+      <p>本平台主要销售电器类商品的销售。如果遇到问题，请联系平台开发者的微信codehome6，从而获取技术支持。</p>
+    </my-dialog>
+    
+    <my-dialog :is-show="isShowLogDialog" @on-close="closeDialog('isShowLogDialog')">
+      <log-form @has-log="onSuccessLog"></log-form>
+    </my-dialog>
+
+    <my-dialog :is-show="isShowRegDialog" @on-close="closeDialog('isShowRegDialog')">
+      <reg-form></reg-form>
+    </my-dialog>
   </div>
 </template>
 
 <script>
-import ThisDialog from '@/components/base/dialog'
-import LoginForm from '@/components/logForm'
-
+import Dialog from './base/dialog'
+import LogForm from './logForm'
+import RegForm from './regForm'
+import { eventBus } from '../eventBus'
 export default {
-  name: 'app',
   components: {
-    ThisDialog,
-    LoginForm
+    MyDialog: Dialog,
+    LogForm,
+    RegForm
   },
-  data: function () {
+  data () {
     return {
-      isShowAbout: false,
-      isShowLogin: false,
-      isShowReg: false
+      isShowAboutDialog: false,
+      isShowLogDialog: false,
+      isShowRegDialog: false,
+      username: ''
     }
   },
   methods: {
-    showDialog (param) {
-      this[param] = true
+    aboutClick () {
+      this.isShowAboutDialog = true
     },
-    hideDialog (param) {
-      this[param] = false
+    logClick () {
+      this.isShowLogDialog = true
+    },
+    regClick () {
+      this.isShowRegDialog = true
+    },
+    closeDialog (attr) {
+      this[attr] = false
+    },
+    onSuccessLog (data) {
+      this.closeDialog ('isShowLogDialog')
+      this.username = data.username
+    },
+    clearComponentStatus () {
+      eventBus.$emit('reset-status')
+      // console.log(el)
     }
   }
 }
 </script>
 
 <style>
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
 
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -76,8 +100,8 @@ b, u, i, center,
 dl, dt, dd, ol, ul, li,
 fieldset, form, label, legend,
 table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
 menu, nav, output, ruby, section, summary,
 time, mark, audio, video {
   margin: 0;
@@ -88,7 +112,7 @@ time, mark, audio, video {
   vertical-align: baseline;
 }
 /* HTML5 display-role reset for older browsers */
-article, aside, details, figcaption, figure,
+article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section {
   display: block;
 }
@@ -128,15 +152,15 @@ body {
   width: 100%;
 }
 .app-head-inner {
-  width: 1000px;
+  width: 1200px;
   margin: 0 auto;
 }
 .head-logo {
   float: left;
-  margin-top: 20px;
 }
-.head-logo img {
+.app-head-inner img {
   width: 50px;
+  margin-top: 20px;
 }
 .head-nav {
   float: right;
@@ -161,7 +185,7 @@ body {
   margin-top: 30px;
 }
 .container {
-  width: 1000px;
+  width: 1200px;
   margin: 0 auto;
 }
 .hr {
@@ -175,7 +199,6 @@ body {
   display: inline-block;
   padding: 10px 20px;
   cursor: pointer;
-  border-radius: 5px;
 }
 .button:hover {
   background: #4fc08d;
@@ -204,5 +227,9 @@ body {
 }
 .g-form-btn {
   padding-left: 100px;
+}
+.g-form-error {
+  color: red;
+  padding-left: 15px;
 }
 </style>
